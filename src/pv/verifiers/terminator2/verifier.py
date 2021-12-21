@@ -74,7 +74,7 @@ def verify(logger, tmpdir: str, plugin_name: str) -> str:
                 volumes={plugin_dir: {'bind': '/mount', 'type': 'rw'}}
             )
 
-            if not result.contains(b'Termination proof succeeded\n'):
+            if 'Termination proof succeeded\n' not in result.decode('utf-8'):
                 failure[pluglet] = result.decode('ascii')
                 logger.error('<terminator2> <%s:%s> %s' % (plugin_name, pluglet, failure[pluglet]))
             else:

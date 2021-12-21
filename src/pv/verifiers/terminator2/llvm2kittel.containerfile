@@ -19,7 +19,6 @@ RUN apt-get install -y libedit-dev
 RUN git clone https://github.com/hkhlaaf/llvm2kittel
 RUN mkdir llvm2kittelbuild
 WORKDIR llvm2kittelbuild
-#ENV CXX clang-3.6
 RUN apt-get install -y clang-3.6
 RUN ln -s /usr/bin/llvm-config-3.6 /usr/bin/llvm-config
 RUN cmake -DCMAKE_BUILD_TYPE=Release \
@@ -28,8 +27,9 @@ RUN cmake -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_CXX_COMPILER=clang++-3.6 \
 	  -DCMAKE_PREFIX_PATH=./ ../llvm2kittel/
 RUN make
-COPY llvm2kittel.sh /
+COPY llvm2kittel.sh rewrite_kittel.py /
+RUN apt-get install -y python3-pip
+RUN pip3 install ply==3.11
 RUN chmod +x /llvm2kittel.sh
-RUN ls -la
 ENTRYPOINT ["/llvm2kittel.sh"]
 CMD [""]
