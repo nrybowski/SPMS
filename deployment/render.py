@@ -104,10 +104,23 @@ def render_makefile(kind, context):
 
 
 def render(kind):
+    raw_services = sorted([i for i in listdir('%s/%s' % (SRC_DIR, kind)) if i not in ['__pycache__', 'verifiers']])
+    services = []
+    order = {}
+    for service in raw_services:
+        dat = service.split('.')
+        if len(dat) > 1:
+            service = '.'.join(dat[1:])
+            services.append(service)
+            order[service] = '%s.' % dat[0]
+        else:
+            services.append(service)
+
     context = {
         'src_dir': SRC_DIR,
-        'services': [i for i in listdir('%s/%s' % (SRC_DIR, kind)) if i not in ['__pycache__', 'verifiers']],
-        'utils': UTILS
+        'services': services,
+        'utils': UTILS,
+        'order': order
     }
 
     # TEMP

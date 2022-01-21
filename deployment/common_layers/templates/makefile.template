@@ -1,7 +1,7 @@
 {% set layers = [] %}
 {% for service in services %}
 {% set layer = "%s_layer%s" % (service, tag) %}
-{% set dir = "%s/common_layers/%s" % (src_dir, service) %}
+{% set dir = "%s/common_layers/%s%s" % (src_dir, order[service] if service in order else "", service) %}
 {% set rule = "build_%s_service" % service %}
 {{ layers.append(rule)|default("",True) }}
 {{ rule }}:

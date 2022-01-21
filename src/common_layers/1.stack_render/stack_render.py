@@ -12,19 +12,20 @@ if 'type' not in config or config['type'] not in ['pv', 'pr']:
 
 context = {}
 
+try:
+    context['registry'] = config['registry']
+    if not context['registry'].endswith('/'):
+        context['registry'] += '/'
+except KeyError:
+    print('Registry not found')
+    exit(1)
+
+
 if config['type'] == 'pv':
     try:
         context['exp'] = config['exp']
     except KeyError:
         pass
-
-    try:
-        context['registry'] = config['registry']
-        if not context['registry'].endswith('/'):
-            context['registry'] += '/'
-    except KeyError:
-        print('Registry not found')
-        exit(1)
 
     try:
         context['verifiers'] = {key: value['verifier'] for key, value in config['verifiers'].items()}

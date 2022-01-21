@@ -212,13 +212,9 @@ resource "null_resource" "pr-build" {
 
       if [[ ! -d /tmp/spms/imgs/pr ]]
       then
-        while
-          CONTAINERS=$(curl 10.20.3.5:5000/v2/_catalog -s | jq -r '.repositories |@sh' | wc -w)
-          [[ $CONTAINERS -lt 8 ]] || break
-            sleep 20
-        do true; done
         cd pr/packer
-        packer build -var root_pass=${var.root_pass} -var hostname=pr build.json
+        packer build -var root_pass=${var.root_pass} -var hostname=pr -var registry=10.20.3.5:5000 build.json
+	cd ../..
       fi
     EOF
   }
@@ -238,6 +234,7 @@ resource "libvirt_volume" "pr-disk" {
 }
 
 resource "libvirt_domain" "spms-pr-domain" {
+  depends_on = [libvirt_volume.pr-disk]
   name   = "spms-pr-domain"
   memory = "1024"
   vcpu   = 2
@@ -264,8 +261,9 @@ resource "libvirt_domain" "spms-pr-domain" {
 
   provisioner "remote-exec" {
     inline=[
+      "set -x",
       "openssl rsa -passin pass:${var.pr_pass} -in pr.key -out /tmp/pr.key",
-      "docker stack up -c docker-compose.yml stack"
+      "while [[ $(docker stack up -c docker-compose.yml stack > /dev/null; echo $?) -eq 1 ]]; do sleep 5; done"
     ]
     connection {
       user="root"
@@ -280,9 +278,13 @@ resource "null_resource" "pv1-build" {
   provisioner "local-exec" {
     command=<<EOF
 	#! /bin/bash
-        cd pv/packer
-        packer build -var root_pass=${var.root_pass} -var hostname=pv1 -var registry=10.20.3.5:5000 build.json
-      fi
+
+	if [[ ! -d /tmp/spms/imgs/pv1 ]]
+        then
+	    cd pv/packer
+	    packer build -var root_pass=${var.root_pass} -var hostname=pv1 -var registry=10.20.3.5:5000 build.json
+	    cd ../../
+	fi
     EOF
   }
 }
@@ -295,7 +297,7 @@ resource "libvirt_volume" "pv1-disk" {
 }
 
 resource "libvirt_domain" "spms-pv1-domain" {
-  depends_on = [libvirt_domain.spms-pr-domain]
+  depends_on = [libvirt_domain.spms-pr-domain, libvirt_volume.pv1-disk]
 
   name   = "spms-pv1-domain"
   memory = "1024"
@@ -322,8 +324,9 @@ resource "libvirt_domain" "spms-pv1-domain" {
 
  provisioner "remote-exec" {
     inline=[
+      "set -x",
       "openssl rsa -passin pass:${var.pv1_pass} -in pv.key -out /dev/shm/pv.key",
-      "docker stack up -c docker-compose.yml stack"
+      "while [[ $(docker stack up -c docker-compose.yml stack > /dev/null; echo $?) -eq 1 ]]; do sleep 5; done"
     ]
     connection {
       user="root"

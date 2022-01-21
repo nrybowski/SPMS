@@ -1,7 +1,7 @@
 version: '3'
 services:
   broker:
-    image: broker
+    image: {{ registry }}broker
     volumes:
       - ./root_ca.pem:/pr/certificates/ca.pem
       - ./pr.pem:/pr/certificates/pr.pem
@@ -12,7 +12,7 @@ services:
       - net
 
   gateway:
-    image: gateway
+    image: {{ registry }}gateway
     volumes:
       - ./root_ca.pem:/pr/certificates/root_ca.pem
       - ./pr.pem:/pr/certificates/pr.pem
