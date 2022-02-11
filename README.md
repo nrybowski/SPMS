@@ -1,6 +1,20 @@
-# SPMS
+# Plugin Distribution System (PDS)
 
-This repository contains an implementation of the Secure Plugin Management System (SPMS) proposed in [1].
+An implementation of the Plugin Distribution System (formerly called Secure Plugin Managment System) proposed in [1].
+
+## About
+
+[Pluginized protocols](https://pluginized-protocols.org/) is an ongoing effort to make Internet protocols programmable.
+The idea is to dynamically extend protocols implementations with protocol plugins.
+This approach solves the deployment issue of new protocols extensions.
+However, it raises safety issues related to the plugins behavior, e.g. do these extensions terminate or act maliciously?
+
+The PDS is a distributed system performing offline verification on such protocols plugins.
+It also ensures their secure distribution to networked peers thanks to trust proofs.
+
+## Related publications
+- SIGCOMM'21 Poster: https://doi.org/10.1145/3472716.3472860
+- Master's thesis: http://hdl.handle.net/2078.1/thesis:30634
 
 ## Structure
 
@@ -83,7 +97,7 @@ If it happens, run `terraform destroy` and relaunch the `apply` command afterwar
 ```
 # Install terraform, packer, qemu-kvm, libvirt, jq
 cd deployment
-terraform apply -var "curdir=${PWD}" -var-file=infra.tfvars
+./setup.sh
 ```
 
 ## Sources
