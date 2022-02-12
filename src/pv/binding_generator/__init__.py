@@ -15,7 +15,7 @@ def parse_manifest(manifest_path: str) -> dict:
         manifest = json.load(fd)
     return {plugin: [obj_content['obj'] for obj_name, obj_content in content['obj_code_list'].items()] for plugin, content in manifest['plugins'].items()}
 
-def generate_binding(tar_archive: bytes, plugin: str) -> list:
+def generate_binding(tar_archive: bytes, plugin: str) -> bytes:
     """ Takes a tar.bz2 compressed archive containing a plugin's source 
     code and outputs the plugin binding
     """
@@ -34,30 +34,21 @@ def generate_binding(tar_archive: bytes, plugin: str) -> list:
 
     """ Generate plugin's binding """
     manifest_path = os.path.join(plugin_dir, 'manifest.json')
-    plugins = parse_manifest(manifest_path)
-    binaries = [i for i in os.listdir(plugin_dir) if i[len(i)-2:] == '.o']
+    pluglets = list(filter(lambda entry: entry[-2:] == '.o', os.listdir(plugin_dir)))
 
-    out_plugins = []
-    for plugin, pluglets in plugins.items():
-        binding_name = '%s.binding' % plugin 
-        binding_path = os.path.join(plugin_dir, binding_name)
-        with open(manifest_path, 'rb') as fd:
-            binding = {'manifest': fd.read()}
-        
-        for pluglet in pluglets:
-            if pluglet in binaries:
-                with open(os.path.join(plugin_dir, pluglet), 'rb') as pluglet_fd:
-                    binding[pluglet] = pluglet_fd.read()
-            else:
-                # TODO: handle error
-                pass
+    binding_name = '%s.binding' % plugin
+    binding_path = os.path.join(plugin_dir, binding_name)
+    with open(manifest_path, 'rb') as fd:
+        binding = {'%s.plugin' % plugin: fd.read()}
 
-        out_plugins.append(cbor.dumps(binding))
+    for pluglet in pluglets:
+        with open(os.path.join(plugin_dir, pluglet), 'rb') as pluglet_fd:
+            binding[pluglet] = pluglet_fd.read()
 
     """ Cleanup """
     shutil.rmtree(tmp_dir)
 
-    return out_plugins[0]
+    return cbor.dumps(binding)
 
 if __name__ == '__main__':
     plugin = "hello_world"
