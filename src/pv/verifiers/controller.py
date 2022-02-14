@@ -15,6 +15,7 @@ WAIT = 30
 VERIFIER_ID = os.environ['VERIFIER_ID'] if 'VERIFIER_ID' in os.environ else ''
 BM_ADDR = os.environ['BM_ADDR'] if 'BM_ADDR' in os.environ else ''
 LOGGER = os.environ.get('LOGGER_ADDR', '')
+KEEP = os.environ.get('KEEP', False)
 
 http_handler = logging.handlers.HTTPHandler(LOGGER, '/log', method='POST')
 http_handler.setLevel(logging.INFO)
@@ -76,5 +77,6 @@ while True:
         pass
     finally:
         """ cleanup temporary directory """
-        shutil.rmtree(tmpdir)
-        logger.info('* Temporary plugin directory cleared.')
+        if not KEEP:
+            shutil.rmtree(tmpdir)
+            logger.info('* Temporary plugin directory cleared.')
