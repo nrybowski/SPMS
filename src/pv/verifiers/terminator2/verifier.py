@@ -39,7 +39,8 @@ def verify(logger, tmpdir: str, plugin_name: str) -> str:
             result = client.containers.run(
                 image='%sterminator2_llvm2kittel_service' % REGISTRY,
                 command=pluglet,
-                volumes={plugin_dir: {'bind': '/mount', 'type': 'rw'}}
+                volumes={plugin_dir: {'bind': '/mount', 'type': 'rw'}},
+                stderr=True
             )
         except docker.errors.ContainerError as e:
             error_log = '<%s> <%s:%s> %s' % (e.image, plugin_name, e.command, e.stderr.decode('utf-8'))
